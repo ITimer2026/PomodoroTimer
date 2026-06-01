@@ -11,7 +11,7 @@ struct PomodoroTimerApp: App {
                 .environment(statusBar.appState)
         }
         .windowResizability(.contentSize)
-        .defaultSize(width: 420, height: 480)
+        .defaultSize(width: 720, height: 560)
 
         Settings {
             SettingsView()

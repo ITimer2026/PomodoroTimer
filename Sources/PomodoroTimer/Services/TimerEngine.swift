@@ -14,7 +14,7 @@ final class TimerEngine {
         return max(0, min(1, 1 - remaining / total))
     }
 
-    var onWorkSessionComplete: (() -> Void)?
+    var onPhaseComplete: ((PomodoroPhase, Date) -> Void)?
 
     private var settings: TimerSettings
     private var endDate: Date?
@@ -89,7 +89,9 @@ final class TimerEngine {
         guard let end = endDate else { return }
         let newRemaining = end.timeIntervalSinceNow
         if newRemaining <= 0 {
-            if phase == .work { onWorkSessionComplete?() }
+            let completedPhase = phase
+            let endedAt = Date()
+            onPhaseComplete?(completedPhase, endedAt)
             advancePhase()
             remaining = settings.duration(for: phase)
             isRunning = false

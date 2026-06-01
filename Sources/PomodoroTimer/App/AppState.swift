@@ -12,8 +12,8 @@ final class AppState {
         self.settings = settings
         self.history = HistoryStore()
         self.timer = TimerEngine(settings: settings.asSettings)
-        self.timer.onWorkSessionComplete = { [weak self] in
-            self?.history.recordCompletion()
+        self.timer.onPhaseComplete = { [weak self] phase, endedAt in
+            self?.history.recordCompletion(at: endedAt, phase: phase)
         }
     }
 }
