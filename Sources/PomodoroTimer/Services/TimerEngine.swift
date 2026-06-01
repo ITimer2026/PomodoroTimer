@@ -8,6 +8,12 @@ final class TimerEngine {
     private(set) var isRunning: Bool = false
     private(set) var completedWorkSessions: Int = 0
 
+    var progress: Double {
+        let total = settings.duration(for: phase)
+        guard total > 0 else { return 0 }
+        return max(0, min(1, 1 - remaining / total))
+    }
+
     var onWorkSessionComplete: (() -> Void)?
 
     private var settings: TimerSettings
