@@ -21,10 +21,10 @@ struct TodayView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HistoryHeader(total: total, caption: "Today, \(weekdaySymbol) · by hour")
+            HistoryHeader(total: total, caption: "今日 \(weekdaySymbol) · 按小时")
 
             if total == 0 {
-                HistoryEmpty(message: "No pomodoros completed today")
+                HistoryEmpty(message: "今日还没有完成的番茄钟")
             } else {
                 chart
                     .padding(.top, 16)

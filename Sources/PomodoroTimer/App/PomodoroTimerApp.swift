@@ -58,6 +58,19 @@ final class StatusBarController: NSObject, NSApplicationDelegate {
             ])
             button.action = #selector(togglePopover)
             button.target = self
+            // Only fire on left click; right click handled via menu below
+            button.sendAction(on: [.leftMouseUp])
+
+            // Right-click menu
+            let menu = NSMenu()
+            menu.addItem(withTitle: "打开历史…", action: #selector(openHistory), keyEquivalent: "")
+            menu.addItem(withTitle: "设置…", action: #selector(openSettings), keyEquivalent: "")
+            menu.addItem(.separator())
+            menu.addItem(withTitle: "退出", action: #selector(quitApp), keyEquivalent: "q")
+            for item in menu.items {
+                item.target = self
+            }
+            button.menu = menu
         }
 
         // Update progress ring every second
@@ -78,6 +91,29 @@ final class StatusBarController: NSObject, NSApplicationDelegate {
         } else if let button = statusItem.button {
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
         }
+    }
+
+    @objc private func openHistory() {
+        // Find the History window and show it
+        if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == "history" || $0.title == "History" }) {
+            window.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+        } else {
+            // Fallback: use openURL-style or send action
+            NSApp.sendAction(Selector(("openHistoryWindow:")), to: nil, from: nil)
+        }
+    }
+
+    @objc private func openSettings() {
+        if #available(macOS 14, *) {
+            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+        } else {
+            NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
+        }
+    }
+
+    @objc private func quitApp() {
+        NSApp.terminate(nil)
     }
 
     // Prevent app from terminating when windows close
@@ -140,15 +176,9 @@ final class RingView: NSView {
     }
 
     private func updateArc() {
-        let color: CGColor
-        switch phase {
-        case .work: color = NSColor.systemRed.cgColor
-        case .shortBreak: color = NSColor.systemGreen.cgColor
-        case .longBreak: color = NSColor.systemBlue.cgColor
-        }
         CATransaction.begin()
         CATransaction.setDisableActions(true)
-        arcLayer.strokeColor = color
+        arcLayer.strokeColor = NSColor.systemRed.cgColor
         arcLayer.strokeEnd = CGFloat(progress)
         CATransaction.commit()
     }

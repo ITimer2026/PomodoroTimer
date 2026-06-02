@@ -24,10 +24,10 @@ struct ThisYearView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HistoryHeader(total: total, caption: "\(yearLabel) · by month")
+            HistoryHeader(total: total, caption: "\(yearLabel) · 按月")
 
             if total == 0 {
-                HistoryEmpty(message: "No pomodoros this year")
+                HistoryEmpty(message: "今年还没有完成的番茄钟")
             } else {
                 chart
                     .padding(.top, 16)

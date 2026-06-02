@@ -22,10 +22,10 @@ struct ThisWeekView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HistoryHeader(total: total, caption: "This week · by day")
+            HistoryHeader(total: total, caption: "本周 · 按天")
 
             if total == 0 {
-                HistoryEmpty(message: "No pomodoros this week")
+                HistoryEmpty(message: "本周还没有完成的番茄钟")
             } else {
                 chart
                     .padding(.top, 16)

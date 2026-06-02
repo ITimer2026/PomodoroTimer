@@ -6,10 +6,10 @@ enum HistoryTab: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var label: String {
         switch self {
-        case .today: return "Today"
-        case .thisWeek: return "Week"
-        case .thisMonth: return "Month"
-        case .thisYear: return "Year"
+        case .today: return "今日"
+        case .thisWeek: return "本周"
+        case .thisMonth: return "本月"
+        case .thisYear: return "今年"
         }
     }
 }
@@ -45,28 +45,28 @@ struct HistoryRootView: View {
 
             footer
         }
-        .navigationTitle("History")
+        .navigationTitle("历史")
         .confirmationDialog(
-            "Clear all history?",
+            "清除所有历史记录？",
             isPresented: $showClearConfirm,
             titleVisibility: .visible
         ) {
-            Button("Clear All", role: .destructive) {
+            Button("全部清除", role: .destructive) {
                 app.history.resetAll()
             }
-            Button("Cancel", role: .cancel) { }
+            Button("取消", role: .cancel) { }
         } message: {
-            Text("This permanently removes every recorded session. Cannot be undone.")
+            Text("这将永久删除所有记录，无法恢复。")
         }
     }
 
     private var footer: some View {
         HStack {
-            Text("All time: \(app.history.sessions.filter { $0.phase == .work }.count) sessions")
+            Text("累计：\(app.history.sessions.filter { $0.phase == .work }.count) 次")
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Spacer()
-            Button("Clear History", role: .destructive) {
+            Button("清除历史", role: .destructive) {
                 showClearConfirm = true
             }
             .controlSize(.small)
@@ -88,7 +88,7 @@ struct HistoryHeader: View {
                     .font(.system(size: 44, weight: .semibold, design: .rounded))
                     .monospacedDigit()
                     .foregroundStyle(total > 0 ? .primary : .secondary)
-                Text("pomodoros")
+                Text("个番茄钟")
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }

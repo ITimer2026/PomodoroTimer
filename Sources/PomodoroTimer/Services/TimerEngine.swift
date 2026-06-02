@@ -6,13 +6,6 @@ final class TimerEngine {
     private(set) var phase: PomodoroPhase = .work
     private(set) var remaining: TimeInterval
     private(set) var isRunning: Bool = false
-    private(set) var completedWorkSessions: Int = 0
-
-    var progress: Double {
-        let total = settings.duration(for: phase)
-        guard total > 0 else { return 0 }
-        return max(0, min(1, 1 - remaining / total))
-    }
 
     var onPhaseComplete: ((PomodoroPhase, Date) -> Void)?
 
@@ -22,27 +15,23 @@ final class TimerEngine {
 
     init(settings: TimerSettings = .default) {
         self.settings = settings
-        self.remaining = settings.duration(for: .work)
+        self.remaining = settings.duration
     }
 
     func updateSettings(_ newSettings: TimerSettings) {
-        let oldWork = settings.workMinutes
         settings = newSettings
         if !isRunning {
-            remaining = settings.duration(for: phase)
-        }
-        if isRunning,
-           phase == .work,
-           newSettings.workMinutes != oldWork,
-           let end = endDate {
-            let elapsed = Date().timeIntervalSince(startDateMinusDuration(originalEnd: end, originalDuration: settings.duration(for: .work)))
-            remaining = max(0, Double(newSettings.workMinutes) * 60 - elapsed)
-            endDate = Date().addingTimeInterval(remaining)
+            remaining = settings.duration
         }
     }
 
     func start() {
         guard !isRunning else { return }
+        // If the previous run just hit zero, remaining is at full duration (set by tick()).
+        // Defensive: if remaining somehow is 0 or negative, reset to full duration.
+        if remaining <= 0 {
+            remaining = settings.duration
+        }
         isRunning = true
         endDate = Date().addingTimeInterval(remaining)
         task = Task { [weak self] in await self?.runLoop() }
@@ -64,16 +53,7 @@ final class TimerEngine {
         task = nil
         isRunning = false
         endDate = nil
-        remaining = settings.duration(for: phase)
-    }
-
-    func skip() {
-        task?.cancel()
-        task = nil
-        isRunning = false
-        endDate = nil
-        advancePhase()
-        remaining = settings.duration(for: phase)
+        remaining = settings.duration
     }
 
     private func runLoop() async {
@@ -89,11 +69,8 @@ final class TimerEngine {
         guard let end = endDate else { return }
         let newRemaining = end.timeIntervalSinceNow
         if newRemaining <= 0 {
-            let completedPhase = phase
-            let endedAt = Date()
-            onPhaseComplete?(completedPhase, endedAt)
-            advancePhase()
-            remaining = settings.duration(for: phase)
+            onPhaseComplete?(phase, Date())
+            remaining = settings.duration
             isRunning = false
             endDate = nil
             task?.cancel()
@@ -103,19 +80,9 @@ final class TimerEngine {
         }
     }
 
-    private func advancePhase() {
-        if phase == .work {
-            completedWorkSessions += 1
-            phase = (completedWorkSessions % settings.cyclesBeforeLongBreak == 0) ? .longBreak : .shortBreak
-        } else {
-            phase = .work
-            if phase == .work, completedWorkSessions >= settings.cyclesBeforeLongBreak {
-                completedWorkSessions = 0
-            }
-        }
-    }
-
-    private func startDateMinusDuration(originalEnd: Date, originalDuration: TimeInterval) -> Date {
-        originalEnd.addingTimeInterval(-originalDuration)
+    var progress: Double {
+        let total = settings.duration
+        guard total > 0 else { return 0 }
+        return max(0, min(1, 1 - remaining / total))
     }
 }

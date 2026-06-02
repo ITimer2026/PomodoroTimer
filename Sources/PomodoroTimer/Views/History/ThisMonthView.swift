@@ -26,10 +26,10 @@ struct ThisMonthView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HistoryHeader(total: total, caption: "\(monthLabel) · by week")
+            HistoryHeader(total: total, caption: "\(monthLabel) · 按周")
 
             if total == 0 {
-                HistoryEmpty(message: "No pomodoros this month")
+                HistoryEmpty(message: "本月还没有完成的番茄钟")
             } else {
                 chart
                     .padding(.top, 16)

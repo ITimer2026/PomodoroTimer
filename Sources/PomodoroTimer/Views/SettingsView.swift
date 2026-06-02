@@ -5,44 +5,23 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Section("Durations") {
+            Section("时长") {
                 Stepper(value: binding(\.workMinutes), in: 1...120) {
-                    LabeledContent("Focus") {
-                        Text("\(app.settings.workMinutes) min")
-                            .monospacedDigit()
-                    }
-                }
-                Stepper(value: binding(\.shortBreakMinutes), in: 1...60) {
-                    LabeledContent("Short Break") {
-                        Text("\(app.settings.shortBreakMinutes) min")
-                            .monospacedDigit()
-                    }
-                }
-                Stepper(value: binding(\.longBreakMinutes), in: 1...120) {
-                    LabeledContent("Long Break") {
-                        Text("\(app.settings.longBreakMinutes) min")
-                            .monospacedDigit()
-                    }
-                }
-            }
-
-            Section("Cycle") {
-                Stepper(value: binding(\.cyclesBeforeLongBreak), in: 2...10) {
-                    LabeledContent("Work sessions before long break") {
-                        Text("\(app.settings.cyclesBeforeLongBreak)")
+                    LabeledContent("专注") {
+                        Text("\(app.settings.workMinutes) 分钟")
                             .monospacedDigit()
                     }
                 }
             }
 
             Section {
-                Text("Changes apply to the next phase. The currently running timer keeps its remaining time.")
+                Text("倒计时归零后自动停止。再次点击「开始」即可进入下一轮。")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
         }
         .formStyle(.grouped)
-        .frame(width: 460, height: 360)
+        .frame(width: 420, height: 200)
     }
 
     private func binding(_ keyPath: WritableKeyPath<TimerSettings, Int>) -> Binding<Int> {
