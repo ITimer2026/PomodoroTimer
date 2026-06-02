@@ -8,7 +8,7 @@
 
 ## 中文
 
-一款原生 macOS 菜单栏番茄钟计时器。无需登录、无需联网、无数据采集 —— 所有数据保存在本地。
+一款极简 macOS 菜单栏番茄钟计时器。无需登录、无需联网、无数据采集 —— 所有数据保存在本地。
 
 ### 功能特性
 
@@ -54,7 +54,7 @@ Sources/PomodoroTimer/
 
 ## English
 
-A native macOS menu bar Pomodoro timer. No login, no network, no telemetry — all data stays local.
+A minimalist macOS menu bar Pomodoro timer. No login, no network, no telemetry — all data stays local.
 
 ### Features
 
