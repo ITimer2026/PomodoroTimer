@@ -16,7 +16,7 @@ struct MenuBarContentView: View {
             HStack {
                 Button(action: { app.timer.reset() }) {
                     Image(systemName: "arrow.counterclockwise")
-                        .frame(width: 30)
+                        .frame(width: 24, height: 24)
                 }
                 .help("重置")
 
@@ -24,6 +24,7 @@ struct MenuBarContentView: View {
 
                 Button(action: primaryAction) {
                     Image(systemName: app.timer.isRunning ? "pause.fill" : "play.fill")
+                        .frame(width: 24, height: 24)
                 }
                 .keyboardShortcut(.defaultAction)
 
@@ -31,7 +32,7 @@ struct MenuBarContentView: View {
 
                 Button(action: onOpenStandalone) {
                     Image(systemName: "macwindow")
-                        .frame(width: 30)
+                        .frame(width: 24, height: 24)
                 }
                 .help("窗口化展示")
             }

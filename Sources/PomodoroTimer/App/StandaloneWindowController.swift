@@ -7,7 +7,7 @@ final class StandaloneWindowController: NSWindowController, NSWindowDelegate {
 
     init(appState: AppState) {
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 160, height: 39),
+            contentRect: NSRect(x: 0, y: 0, width: 160, height: 56),
             styleMask: [.borderless],
             backing: .buffered,
             defer: false
@@ -17,6 +17,7 @@ final class StandaloneWindowController: NSWindowController, NSWindowDelegate {
         window.hasShadow = true
         window.backgroundColor = .clear
         window.level = .floating
+        window.contentView?.postsBoundsChangedNotifications = true
 
         // Position: restore saved, or default to top-right
         if let saved = UserDefaults.standard.string(forKey: Self.positionKey) {

@@ -8,7 +8,7 @@ struct StandaloneWindowView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Row 1: close + pin button (entire row hidden unless hovering)
+            // Row 1: close + pin (only rendered when hovering)
             if isHovering {
                 HStack {
                     Button(action: onClose) {
@@ -32,12 +32,12 @@ struct StandaloneWindowView: View {
                     .help("置顶")
                 }
                 .padding(.horizontal, 8)
-                .padding(.top, 6)
+                .padding(.top, 4)
                 .padding(.bottom, 2)
-                .transition(.opacity)
+                .transition(.move(edge: .top).combined(with: .opacity))
             }
 
-            // Row 2: timer on left, buttons on right
+            // Row 2: timer + buttons, vertically centered in remaining space
             HStack {
                 Text(format(app.timer.remaining))
                     .font(.system(size: 22, weight: .light, design: .rounded))
@@ -63,11 +63,10 @@ struct StandaloneWindowView: View {
             }
             .frame(maxHeight: .infinity)
             .padding(.horizontal, 8)
-            .padding(.vertical, 6)
         }
         .frame(width: 160)
         .onHover { hovering in
-            withAnimation(.easeInOut(duration: 0.2)) {
+            withAnimation(.easeInOut(duration: 0.15)) {
                 isHovering = hovering
             }
         }

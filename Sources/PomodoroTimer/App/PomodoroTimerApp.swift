@@ -6,16 +6,8 @@ struct PomodoroTimerApp: App {
     @NSApplicationDelegateAdaptor(StatusBarController.self) var statusBar
 
     var body: some Scene {
-        Window("History", id: "history") {
-            HistoryView()
-                .environment(statusBar.appState)
-        }
-        .windowResizability(.contentSize)
-        .defaultSize(width: 720, height: 560)
-
         Settings {
-            SettingsView()
-                .environment(statusBar.appState)
+            EmptyView()
         }
     }
 }
@@ -25,6 +17,7 @@ final class StatusBarController: NSObject, NSApplicationDelegate {
     var progressView: RingView!
     var popover: NSPopover!
     var standaloneController: StandaloneWindowController?
+    var statusMenu: NSMenu?
     let appState = AppState()
     var timer: Timer?
 
@@ -49,6 +42,14 @@ final class StatusBarController: NSObject, NSApplicationDelegate {
         let ring = RingView(frame: NSRect(x: 0, y: 0, width: 22, height: 22))
         self.progressView = ring
 
+        // Right-click menu (button.menu alone is ignored when button.action is set)
+        let menu = NSMenu()
+        menu.addItem(withTitle: "退出", action: #selector(quitApp), keyEquivalent: "q")
+        for item in menu.items {
+            item.target = self
+        }
+        self.statusMenu = menu
+
         if let button = statusItem.button {
             button.image = nil
             button.addSubview(ring)
@@ -59,21 +60,10 @@ final class StatusBarController: NSObject, NSApplicationDelegate {
                 ring.widthAnchor.constraint(equalToConstant: 22),
                 ring.heightAnchor.constraint(equalToConstant: 22),
             ])
-            button.action = #selector(togglePopover)
+            button.action = #selector(statusBarClicked(_:))
             button.target = self
-            // Only fire on left click; right click handled via menu below
-            button.sendAction(on: [.leftMouseUp])
-
-            // Right-click menu
-            let menu = NSMenu()
-            menu.addItem(withTitle: "打开历史…", action: #selector(openHistory), keyEquivalent: "")
-            menu.addItem(withTitle: "设置…", action: #selector(openSettings), keyEquivalent: "")
-            menu.addItem(.separator())
-            menu.addItem(withTitle: "退出", action: #selector(quitApp), keyEquivalent: "q")
-            for item in menu.items {
-                item.target = self
-            }
-            button.menu = menu
+            // Listen for both left and right mouse up
+            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }
 
         // Update progress ring every second
@@ -88,30 +78,26 @@ final class StatusBarController: NSObject, NSApplicationDelegate {
         progressView.phase = appState.timer.phase
     }
 
+    @objc private func statusBarClicked(_ sender: AnyObject?) {
+        let event = NSApp.currentEvent
+        if event?.type == .rightMouseUp {
+            showStatusMenu()
+            return
+        }
+        togglePopover(sender)
+    }
+
+    private func showStatusMenu() {
+        guard let button = statusItem.button, let menu = statusMenu else { return }
+        let point = NSPoint(x: 0, y: button.frame.maxY + 4)
+        menu.popUp(positioning: nil, at: point, in: button)
+    }
+
     @objc private func togglePopover(_ sender: AnyObject?) {
         if popover.isShown {
             popover.performClose(sender)
         } else if let button = statusItem.button {
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-        }
-    }
-
-    @objc private func openHistory() {
-        // Find the History window and show it
-        if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == "history" || $0.title == "History" }) {
-            window.makeKeyAndOrderFront(nil)
-            NSApp.activate(ignoringOtherApps: true)
-        } else {
-            // Fallback: use openURL-style or send action
-            NSApp.sendAction(Selector(("openHistoryWindow:")), to: nil, from: nil)
-        }
-    }
-
-    @objc private func openSettings() {
-        if #available(macOS 14, *) {
-            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-        } else {
-            NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
         }
     }
 
@@ -123,12 +109,10 @@ final class StatusBarController: NSObject, NSApplicationDelegate {
         if standaloneController == nil {
             standaloneController = StandaloneWindowController(appState: appState)
         }
-        // Close the menu bar popover so the user sees the standalone window clearly
         popover.performClose(nil)
         standaloneController?.show()
     }
 
-    // Prevent app from terminating when windows close
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         return .terminateNow
     }
@@ -182,7 +166,6 @@ final class RingView: NSView {
         arcLayer.strokeColor = NSColor.systemRed.cgColor
         arcLayer.lineWidth = lineWidth
         arcLayer.lineCap = .round
-        // Start from top (12 o'clock): rotate -90° from default 3 o'clock
         arcLayer.transform = CATransform3DMakeRotation(-.pi / 2, 0, 0, 1)
         layer?.addSublayer(arcLayer)
     }
