@@ -36,6 +36,18 @@ struct MenuBarContentView: View {
                 }
                 .help("窗口化展示")
             }
+
+            Divider()
+
+            Text("今日已经完成 \(app.todayCount) 个番茄")
+                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .foregroundStyle(
+                    app.todayCount > 0
+                    ? Color(red: 0.18, green: 0.78, blue: 0.44)
+                    : Color.secondary
+                )
+                .tracking(1.5)
+                .frame(maxWidth: .infinity, alignment: .center)
         }
         .padding(16)
         .frame(width: 200)
