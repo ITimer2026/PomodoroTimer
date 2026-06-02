@@ -24,6 +24,7 @@ final class StatusBarController: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem!
     var progressView: RingView!
     var popover: NSPopover!
+    var standaloneController: StandaloneWindowController?
     let appState = AppState()
     var timer: Timer?
 
@@ -35,8 +36,10 @@ final class StatusBarController: NSObject, NSApplicationDelegate {
         popover.contentSize = NSSize(width: 280, height: 340)
         popover.behavior = .transient
         let hostingView = NSHostingView(
-            rootView: MenuBarContentView()
-                .environment(appState)
+            rootView: MenuBarContentView(onOpenStandalone: { [weak self] in
+                self?.openStandaloneWindow()
+            })
+            .environment(appState)
         )
         popover.contentViewController = NSViewController()
         popover.contentViewController?.view = hostingView
@@ -114,6 +117,15 @@ final class StatusBarController: NSObject, NSApplicationDelegate {
 
     @objc private func quitApp() {
         NSApp.terminate(nil)
+    }
+
+    private func openStandaloneWindow() {
+        if standaloneController == nil {
+            standaloneController = StandaloneWindowController(appState: appState)
+        }
+        // Close the menu bar popover so the user sees the standalone window clearly
+        popover.performClose(nil)
+        standaloneController?.show()
     }
 
     // Prevent app from terminating when windows close

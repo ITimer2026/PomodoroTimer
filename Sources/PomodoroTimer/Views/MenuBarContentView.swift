@@ -3,6 +3,7 @@ import AppKit
 
 struct MenuBarContentView: View {
     @Environment(AppState.self) private var app
+    let onOpenStandalone: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -12,19 +13,27 @@ struct MenuBarContentView: View {
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.vertical, 4)
 
-            HStack(spacing: 8) {
-                Button(action: primaryAction) {
-                    Label(app.timer.isRunning ? "暂停" : "开始",
-                          systemImage: app.timer.isRunning ? "pause.fill" : "play.fill")
-                        .frame(maxWidth: .infinity)
-                }
-                .keyboardShortcut(.defaultAction)
-                .buttonStyle(.borderedProminent)
-
+            HStack {
                 Button(action: { app.timer.reset() }) {
                     Image(systemName: "arrow.counterclockwise")
+                        .frame(width: 30)
                 }
                 .help("重置")
+
+                Spacer()
+
+                Button(action: primaryAction) {
+                    Image(systemName: app.timer.isRunning ? "pause.fill" : "play.fill")
+                }
+                .keyboardShortcut(.defaultAction)
+
+                Spacer()
+
+                Button(action: onOpenStandalone) {
+                    Image(systemName: "macwindow")
+                        .frame(width: 30)
+                }
+                .help("窗口化展示")
             }
         }
         .padding(16)
