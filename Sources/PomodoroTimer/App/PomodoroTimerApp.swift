@@ -20,6 +20,7 @@ final class StatusBarController: NSObject, NSApplicationDelegate {
     var statusMenu: NSMenu?
     let appState = AppState()
     var timer: Timer?
+    private var popoverCloseMonitor: Any?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Keep app alive even when all windows are closed
@@ -95,10 +96,35 @@ final class StatusBarController: NSObject, NSApplicationDelegate {
 
     @objc private func togglePopover(_ sender: AnyObject?) {
         if popover.isShown {
-            popover.performClose(sender)
+            closePopover()
         } else if let button = statusItem.button {
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+            // Close the popover the instant the user activates another app
+            // or clicks anywhere outside it.
+            installPopoverCloseMonitor()
         }
+    }
+
+    private func installPopoverCloseMonitor() {
+        removePopoverCloseMonitor()
+        // Global click monitor: fires when user clicks in another app.
+        // (Local monitor handles clicks inside our own app.)
+        popoverCloseMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]) { [weak self] _ in
+            self?.closePopover()
+        }
+    }
+
+    private func removePopoverCloseMonitor() {
+        if let m = popoverCloseMonitor {
+            NSEvent.removeMonitor(m)
+            popoverCloseMonitor = nil
+        }
+    }
+
+    private func closePopover() {
+        guard popover.isShown else { return }
+        popover.performClose(nil)
+        removePopoverCloseMonitor()
     }
 
     @objc private func quitApp() {
@@ -109,7 +135,7 @@ final class StatusBarController: NSObject, NSApplicationDelegate {
         if standaloneController == nil {
             standaloneController = StandaloneWindowController(appState: appState)
         }
-        popover.performClose(nil)
+        closePopover()
         standaloneController?.show()
     }
 
